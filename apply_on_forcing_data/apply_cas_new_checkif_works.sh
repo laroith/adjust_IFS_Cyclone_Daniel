@@ -1,7 +1,7 @@
 #!/bin/bash 
 #SBATCH --job-name=CREATE_COUNTERFACTUAL_FORCING_MIROC6
 #SBATCH --time=72:00:00
-#SBATCH -N 4
+#SBATCH -N 1
 #SBATCH --ntasks-per-node=128   
 #SBATCH --ntasks-per-core=1
 #SBATCH --partition=zen3_0512
@@ -15,8 +15,8 @@
 echo "Current working directory: $(pwd)"
 
 # set the number of processors
-  NPX=16
-  NPY=32
+  NPX=8
+  NPY=16
   NCORES=$(( ${NPX} * ${NPY} ))
 
 GCM_NAME=$2
@@ -46,7 +46,7 @@ do
     fi
     
     echo "Processing file: $FILE"
-    python /gpfs/data/fs72281/lar/change_temp/CC_signals_Laurenz/apply_CC_cas_D_3D_TSO_TSKIN.py "$FILE" $GCM_NAME $INPUT_DIR_CAS $OUTPUT_DIR_CAS $INPUT_DIR_CC_MRSO
+    python /gpfs/data/fs72281/lar/change_temp/CC_signals_Laurenz/apply_CC_cas_D_3D_TSO_TSKIN_new_saveoutput.py "$FILE" $GCM_NAME $INPUT_DIR_CAS $OUTPUT_DIR_CAS $INPUT_DIR_CC_MRSO
 done
 
 # Change directory to the output directory where the processed files are

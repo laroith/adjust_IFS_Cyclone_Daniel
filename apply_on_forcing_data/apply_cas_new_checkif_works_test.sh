@@ -45,7 +45,7 @@ do
     fi
     
     echo "Processing file: $FILE"
-    python /gpfs/data/fs72281/lar/change_temp/CC_signals_Laurenz/apply_CC_cas_D_3D_TSO_TSKIN.py "$FILE" $GCM_NAME $INPUT_DIR_CAS $OUTPUT_DIR_CAS $INPUT_DIR_CC_MRSO
+    python /gpfs/data/fs72281/lar/change_temp/CC_signals_Laurenz/apply_CC_cas_D_3D_TSO_TSKIN_new_saveoutput.py "$FILE" $GCM_NAME $INPUT_DIR_CAS $OUTPUT_DIR_CAS $INPUT_DIR_CC_MRSO
 done
 
 # Change directory to the output directory where the processed files are
