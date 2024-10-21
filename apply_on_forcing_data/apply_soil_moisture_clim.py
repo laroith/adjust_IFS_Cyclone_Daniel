@@ -4,6 +4,7 @@ import numpy as np
 from scipy import interpolate
 import argparse
 from pathlib import Path
+import pandas as pd
 
 # Set up argument parsing
 parser = argparse.ArgumentParser(description="Process CAS files with given parameters.")
@@ -21,43 +22,34 @@ print(f"Opening CAS file: {args.cas_filename}")
 
 # Now you can use args.cas_filename, args.gcm_name, args.input_dir, and args.output_dir in your script
 
-mrso_climatology_file_path = "/home/lar/adjust_IFS/soil_moisture_clim/climatology.nc"
+mrso_climatology_file_path = "/home/lar/adjust_IFS/soil_moisture_clim/climatology_remapcon.nc"
 
 # open cas-file, to be modified
-file_cas_original=xr.open_dataset(args.cas_filename)
-
-# remove time dimension
-file_cas = file_cas_original.isel(time=0)
-
+file_cas=xr.open_dataset(args.cas_filename)
 
 
 # open file containing CC profiles and select by month and day
-file_mrso = xr.open_dataset(mrso_climatology_file_path)
+mrso_CC = xr.open_dataset(mrso_climatology_file_path)
 
+# Define the soil1 coordinate
+soil1_depths = [0.035, 0.175, 0.64, 1.945]
 
-
-#mrso_CC = file_mrso.isel(month=7).sel(lat=slice(46.625, 40), lon=slice(12.125, 27.625)) # [0,0,0] removes the coordinates time, lat, lon
-
-print("mrso_CC:")
-print(file_mrso)
+# Stack the data variables into a single DataArray with a new 'soil1' coordinate
+mrso_stacked = xr.concat(
+    [mrso_CC['swvl1'], mrso_CC['swvl2'], mrso_CC['swvl3'], mrso_CC['swvl4']],
+    dim=pd.Index(soil1_depths, name='soil1')
+)
 
 # extract volume fraction of condensed water in soil pores
 W_SO_REL = file_cas.W_SO_REL # ratio of volume fraction of soil moisture to pore volume [1]
 
-print("W_SO_REL:")
-print(W_SO_REL)
 
-#mrso_CC_da = (mrso_CC['anomaly_rel'] / 100) + 1 
+# Convert 'soil1' coordinate in mrso_regridded to float32
+mrso_stacked = mrso_stacked.assign_coords(soil1=mrso_stacked['soil1'].astype('float32'))
 
-#W_SO_REL_broadcasted, mrso_CC_da_broadcasted = xr.broadcast(W_SO_REL, mrso_CC_da)
+# Convert volume fraction to W_SO_REL=VW_SO/0.472
+mrso_stacked_rel = mrso_stacked / 0.472
 
-
-#print("mrso_CC_da_expanded:")
-#print(mrso_CC_da_broadcasted)
-
-# Perform the operation
-
-print('Climatology added!')
 
 #===========================================================================
 #                            save output
@@ -65,11 +57,12 @@ print('Climatology added!')
 
 
 file_cas_new = xr.open_dataset(args.cas_filename)
-condition = np.isfinite(file_mrso) & (file_mrso > 0)
+condition = np.isfinite(mrso_stacked_rel) & (mrso_stacked_rel > 0)
  
 
-file_cas_new['W_SO_REL'] = xr.where(condition, file_mrso, file_cas_new['W_SO_REL'], keep_attrs=True)
+file_cas_new['W_SO_REL'] = xr.where(condition, mrso_stacked_rel, W_SO_REL)
 
+file_cas_new['W_SO_REL'] = file_cas_new['W_SO_REL'].transpose('time', 'soil1', 'lat', 'lon')
 
 filename_output = args.cas_filename
 output_file_path = Path(args.output_dir_cas) / filename_output

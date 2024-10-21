@@ -18,7 +18,7 @@ mkdir -p ${3}
 #GCM_NAME=$2
 INPUT_DIR_CAS=$2
 OUTPUT_DIR_CAS=$3
-SST_FILE_PATH=$4
+
 
 # Find all files matching the pattern given as the first argument
 echo "Looking for CAS files in ${INPUT_DIR_CAS} with pattern $1"
@@ -37,7 +37,7 @@ do
     fi
     
     echo "Processing file: ${FILE}"
-    python apply_sst.py --cas_input_dir=${INPUT_DIR_CAS} --sst_file_path=${SST_FILE_PATH} --output_dir=${OUTPUT_DIR_CAS}
+    python apply_sst.py --cas_input_dir=${INPUT_DIR_CAS} --output_dir=${OUTPUT_DIR_CAS}
     echo "Done processed ${FILE}"
 done
 
