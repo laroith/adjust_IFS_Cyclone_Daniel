@@ -60,7 +60,7 @@ file_cas_new = xr.open_dataset(args.cas_filename)
 condition = np.isfinite(mrso_stacked_rel) & (mrso_stacked_rel > 0)
  
 
-file_cas_new['W_SO_REL'] = xr.where(condition, mrso_stacked_rel, W_SO_REL)
+file_cas_new['W_SO_REL'] = xr.where(condition, mrso_stacked_rel, W_SO_REL, keep_attrs=True)
 
 file_cas_new['W_SO_REL'] = file_cas_new['W_SO_REL'].transpose('time', 'soil1', 'lat', 'lon')
 
